@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link   rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-default/index.css">
+</head>
+
+<body>
+
+  <div id = "app">
+  <el-table
+    :data="tableData"
+    highlight-current-row
+    @row-dblclick="handleCurrentChange"
+    border
+    stripe
+    fit
+    style="width: 100%">
+    <el-table-column
+      prop="time"
+      label="Time">
+    </el-table-column>
+    <el-table-column
+      prop="issue"
+      label="Issue">
+    </el-table-column>
+    <el-table-column
+      prop="version"
+      label="Version">
+    </el-table-column>
+    <el-table-column
+      prop="cause"
+      label="Cause">
+    </el-table-column>
+    <el-table-column
+      prop="comments"
+      label="Comments">
+    </el-table-column>
+  </el-table>
+
+     <el-dialog title="Diagnostic Issue" :visible.sync="dialogFormVisible">
+      <el-form :model="form">
+        <el-form-item label="Time" :label-width="formLabelWidth">
+          <el-input v-model="form.time" auto-complete="off" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="Issue" :label-width="formLabelWidth">
+          <el-input v-model="form.issue" auto-complete="off" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="Version" :label-width="formLabelWidth">
+          <el-input v-model="form.version" auto-complete="off" disabled></el-input>
+        </el-form-item>          
+        <el-form-item label="Cause" :label-width="formLabelWidth">
+          <el-input v-model="form.cause" auto-complete="off"></el-input>
+        </el-form-item>   
+        <el-form-item label="Comments" :label-width="formLabelWidth">
+          <el-input v-model="form.comments" auto-complete="off"></el-input>
+        </el-form-item>                               
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="handleSubmit">submit</el-button>
+      </div>
+    </el-dialog> 
+  </div> 
+
+</body>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+      <script>        
+        new Vue({
+          el: '#app',
+          data: { tableData:  [],
+                  dialogFormVisible: false,
+                  form: {
+                      time: '',
+                      issue: '',
+                      version: '',
+                      cause: '',
+                      comments: ''
+                    },
+                    formLabelWidth: '120px'           
+                },
+          mounted: function () 
+          {
+               var vm = this;
+               $.getJSON("http://localhost:5000/test/api/v1.0/diagnostics",
+                 function(data) {
+                    vm.tableData = data.items;
+                 });  
+          },         
+          methods: 
+          {
+            handleSubmit()
+            {
+                this.dialogFormVisible = false;
+                alert("changed")
+            },
+            handleCurrentChange(val) {
+                this.dialogFormVisible = true;
+                this.form = val;
+            }            
+          }         
+        })
+      </script>
+
+</html>
