@@ -8,6 +8,11 @@
 <body>
 
   <div id = "app">
+
+  <el-row>
+  <el-button @click="onAddNew">Add New Issue <i class="el-icon-plus el-icon--right"></i></el-button>
+  </el-row>
+
   <el-table
     :data="tableData"
     highlight-current-row
@@ -38,7 +43,7 @@
     </el-table-column>
   </el-table>
 
-     <el-dialog title="Diagnostic Issue" :visible.sync="dialogFormVisible">
+     <el-dialog title="Diagnostic Issue" :visible.sync="modifyDialogVisible">
       <el-form :model="form">
         <el-form-item label="Time" :label-width="formLabelWidth">
           <el-input v-model="form.time" auto-complete="off" disabled></el-input>
@@ -57,10 +62,47 @@
         </el-form-item>                               
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="handleSubmit">submit</el-button>
+        <el-button type="primary" @click="handleModify">submit</el-button>
       </div>
     </el-dialog> 
+
+     <el-dialog title="Diagnostic Issue" :visible.sync="addIssueDialogVisible">
+      <el-form :model="newForm">
+        <el-form-item label="Date" :label-width="formLabelWidth">
+            <el-date-picker type="date" placeholder="choose data" v-model="newForm.date"></el-date-picker>
+        </el-form-item>
+        <el-form-item label="Time" :label-width="formLabelWidth">
+            <el-time-picker type="fixed-time" placeholder="choose time" v-model="newForm.time"></el-time-picker>
+        </el-form-item>
+        <el-form-item label="Issue" :label-width="formLabelWidth">
+            <el-select v-model="newForm.issue" placeholder="INTERVENTION">
+            <el-option label="INTERVENTION" value="INTERVENTION"></el-option>
+            <el-option label="COLLISION" value="COLLISION"></el-option>
+            <el-option label="BREAK_LINE" value="BREAK_LINE"></el-option>
+        </el-form-item>
+        <el-form-item label="Version" :label-width="formLabelWidth">
+          <el-input v-model="newForm.version" auto-complete="off"></el-input>
+        </el-form-item>          
+        <el-form-item label="Cause" :label-width="formLabelWidth">
+          <el-input v-model="newForm.cause" auto-complete="off"></el-input>
+        </el-form-item>   
+        <el-form-item label="Comments" :label-width="formLabelWidth">
+          <el-input type="textarea" v-model="newForm.comments" auto-complete="off"></el-input>
+        </el-form-item>                               
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="handleAddNew">submit</el-button>
+      </div>
+    </el-dialog>
+
   </div> 
+
+    <style>
+      .el-row {
+        margin-bottom: 20px;
+        }
+    </style>
+
 
 </body>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
@@ -71,7 +113,8 @@
         new Vue({
           el: '#app',
           data: { tableData:  [],
-                  dialogFormVisible: false,
+                  modifyDialogVisible: false,
+                  addIssueDialogVisible : false,
                   form: {
                       time: '',
                       issue: '',
@@ -79,6 +122,14 @@
                       cause: '',
                       comments: ''
                     },
+                  newForm: {
+                      date: '',
+                      time: '',
+                      issue: 'INTERVENTION',
+                      version: ' ',
+                      cause: ' ',
+                      comments: ' '                   
+                  },
                     formLabelWidth: '120px',
                     current_row: null           
                 },
@@ -92,10 +143,19 @@
           },         
           methods: 
           {
-            handleSubmit()
+            handleCurrentChange(val) {
+                this.modifyDialogVisible = true;
+                this.current_row = val;
+                this.form.time = val.time;
+                this.form.issue = val.issue;
+                this.form.version = val.version;
+                this.form.cause = val.cause;
+                this.form.comments = val.comments;
+            },
+            handleModify()
             {
                 var self = this;
-                this.dialogFormVisible = false;
+                this.modifyDialogVisible = false;
                 $.ajax({
                 url: "http://localhost:5000/test/api/v1.0/diagnostics/" + Date.parse(this.form.time) + this.form.time.slice(-7,-1),
                 type: 'PUT',    
@@ -109,15 +169,56 @@
                 error: function (error) {alert("error: fail to submit to server!");}
                 });
             },
-            handleCurrentChange(val) {
-                this.dialogFormVisible = true;
-                this.current_row = val;
-                this.form.time = val.time;
-                this.form.issue = val.issue;
-                this.form.version = val.version;
-                this.form.cause = val.cause;
-                this.form.comments = val.comments;
-            }            
+            onAddNew()
+            {
+                this.addIssueDialogVisible = true;
+            },
+            handleAddNew()
+            {
+                if(this.newForm.date == '')
+                {
+                    alert("Error: date should not be empty");
+                }
+                if(this.newForm.time == '')
+                {
+                    alert("Error: time should not be empty");
+                }
+                if(this.newForm.issue == '')
+                {
+                    alert("Error: issue should not be empty");
+                }                
+                if(this.newForm.version == '')
+                {
+                    alert("Error: version should not be empty");
+                }
+
+                var date = new Date(this.newForm.date);
+                var targetTime = new Date(this.newForm.time)
+                targetTime.setFullYear(date.getFullYear());
+                targetTime.setMonth(date.getMonth());
+                targetTime.setDate(date.getDate());
+
+                this.addIssueDialogVisible = false;
+                var issue = {time : Date.parse(targetTime) * 1000000,
+                            issue : this.newForm.issue,
+                            version : this.newForm.version,
+                            cause : this.newForm.cause,
+                            comments : this.newForm.comments};
+
+
+                var self = this;
+                $.ajax({
+                url: "http://localhost:5000/test/api/v1.0/diagnostics",
+                type: 'POST',    
+                data: JSON.stringify(issue),
+                contentType: "application/json",
+                dataType: 'json',
+                success: function(result) { 
+                    self.tableData.push(issue);
+                },
+                error: function (error) {alert("error: fail to submit to server!");}
+                });                
+            }
           }         
         })
       </script>
