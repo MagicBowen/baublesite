@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="../node_modules/element-ui/lib/theme-default/index.css">
+</head>
+
+<body>
+
+  <div id = "app">
+      <el-table
+        :data="diagnostics"
+        highlight-current-row
+        border
+        stripe
+        fit>
+        <el-table-column
+          prop="time"
+          label="Time">
+        </el-table-column>
+        <el-table-column
+          prop="timestamp"
+          label="TimeStamp">
+        </el-table-column>    
+        <el-table-column
+          prop="issue"
+          label="Issue">
+        </el-table-column>
+        <el-table-column
+          prop="roadName"
+          label="Road">
+        </el-table-column>
+        <el-table-column
+          prop="cause"
+          label="Cause">
+        </el-table-column>
+        <el-table-column
+          prop="comment"
+          label="Comment">
+        </el-table-column>
+      </el-table>
+  </div>
+</body>
+
+<script src="../node_modules/vue/dist/vue.js"></script>
+<script src="../node_modules/influx/lib/index.js"></script>
+<script src="../node_modules/element-ui/lib/index.js"></script>
+
+<script> 
+        new Vue({
+          el: '#app',
+          data: { diagnostics:  []},
+          mounted: function () {
+            var vm = this;
+            var influx = new Influx.InfluxDB('http://localhost:8086/test');
+            influx.query('select * from diagnostics').then(results => {vm.diagnostics = result;});
+          }
+          });
+</script>
