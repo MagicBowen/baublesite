@@ -8,9 +8,11 @@
     "build": "rimraf dist && webpack -p --progress --hide-modules"
   },
   "dependencies": {
+    "echarts": "^3.5.4",
     "element-ui": "^1.1.2",
     "influx": "^5.0.0-alpha.4",
-    "vue": "^2.1.8"
+    "vue": "^2.1.8",
+    "vue-router": "^2.5.3"
   },
   "engines": {
     "node": ">=6"

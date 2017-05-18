@@ -1,104 +1,50 @@
 <template>
-  <div id="app">
-    <img src="./assets/logo.png">
-      <el-table
-        :data="diagnostics"
-        highlight-current-row
-        border
-        stripe
-        fit>
-        <el-table-column
-          prop="time"
-          label="Time">
-        </el-table-column>  
-        <el-table-column
-          prop="issue"
-          label="Issue">
-        </el-table-column>
-        <el-table-column
-          prop="roadName"
-          label="Road">
-        </el-table-column>
-        <el-table-column
-          prop="cause"
-          label="Cause">
-        </el-table-column>
-        <el-table-column
-          prop="comment"
-          label="Comment">
-        </el-table-column>
-        <el-table-column>
-          <template scope="scope">
-            <el-button type="text" size="small" @click='onEdit(scope.$index)'>edit</el-button>
-          </template>
-        </el-table-column>        
-      </el-table>
-      <add-form :form-visible='addNewVisible' @onSubmit= 'onAddNew' @onCancel= 'onAddCancel'></add-form>
-      <edit-form :form-visible='editVisible' :form= 'editIssue' @onSubmit= 'onEditDone' @onCancel= 'onEditCancel'></edit-form>
-      <el-button @click='handleAddNew'>add new</el-button>
+  <div>
+    <el-row>
+      <el-col :span="24"><div class="grid-content bg-purple-dark" style="height:100px;"></div></el-col>
+    </el-row>
+    <el-row :gutter="5">
+      <el-col :span="4">
+            <el-menu default-active="2" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose" theme="dark" router="true" style="height:400px;">
+              <el-menu-item index="home">List</el-menu-item>
+              <el-menu-item index="chart">Chart</el-menu-item>
+            </el-menu>
+      </el-col>
+      <el-col :span="20">
+        <router-view></router-view>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
-<script>
-
-import queryAll from './influx.js'
-import addNew from './AddNew.vue'
-import editForm from './EditForm.vue'
-
-export default {
-  data () {
-    return {
-      diagnostics: [],
-      addNewVisible: false,
-      editVisible: false,
-      editIssue: {issue:'', date:'', time:'', comment:''}
-    }
-  },
-
-  components: {
-    'add-form' : addNew,
-    'edit-form' : editForm
-  },
-
-  mounted: function () {
-    var vm = this;
-    queryAll().then(result => {
-      vm.diagnostics = result;
-      for(var i = 0; i < vm.diagnostics.length; i++)
-      {
-        vm.diagnostics[i].time = vm.diagnostics[i].time.toString();
-      }
-      alert(`type = ${typeof(vm.diagnostics[0].time)}, value = ${vm.diagnostics.time}`);
-    });
-  },
-
-  methods: {
-    handleAddNew(){
-      this.$data.addNewVisible = true;
-    },
-    onAddNew(){
-      alert('add new');
-      this.$data.addNewVisible = false;
-    },
-    onAddCancel(){
-      this.$data.addNewVisible = false;
-    },
-    onEditDone(){
-      this.$data.editVisible = false;
-    },
-    onEditCancel(){
-      this.$data.editVisible = false;
-    },
-    onEdit(index){
-      this.editIssue = this.diagnostics[index];
-      this.$data.editVisible = true;
+<style>
+  #bauble {
+    margin-top: 50px;
+  }
+  .el-row {
+    margin-bottom: 5px;
+    &:last-child {
+      margin-bottom: 0;
     }
   }
-}
-</script>
-
-<style>
-body {
-  font-family: Helvetica, sans-serif;
-}
+  .el-col {
+    border-radius: 4px;
+  }
+  .bg-purple-dark {
+    background: #99a9bf;
+  }
+  .bg-purple {
+    background: #d3dce6;
+  }
+  .bg-purple-light {
+    background: #e5e9f2;
+  }
+  .grid-content {
+    border-radius: 4px;
+    min-height: 36px;
+  }
+  .row-bg {
+    padding: 10px 0;
+    background-color: #f9fafc;
+  }
 </style>
